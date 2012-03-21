@@ -10,7 +10,8 @@
 
     <center>
 	<div style="background-color:#cccccc">
-	    <h2>Welcome to Squire's Quisitive Uniformly Informational Requirements Engine!</h2>
+	    <h1>Welcome</h1><p> to </p>
+	    <h2>Squire's Quisitive Uniformly Informational Requirements Engine!</h2>
 	    <p>Squire, for short.</p>
 	    <div
 		xmlns:cc="http://creativecommons.org/ns#"
@@ -28,7 +29,7 @@
 			 alt="Creative Commons Attribution 2.0"
 			 height="28" width="81">
 		</a>
-
+		<p><a href="./simplChat.php">Pub</a></p>
 	    </div>
 	</div>
     </center>
