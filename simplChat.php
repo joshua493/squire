@@ -1,6 +1,6 @@
 <?php
 // Note:
-// This page requires write permission by the web server.
+// This file requires write permission by the web server.
 // After chown, this file will be LOCKED to editing except by root or _www
 // So, make a copy of this script before setting permissions!
 //
@@ -16,9 +16,10 @@
 constant($CHAT_TITLE= "PH(Public House)");//$CHATTITLE= "php simple chat"; // original name
 constant($MAX_MSGS=10); // MAX_MSGS + 1 will scroll off the bottom forever
 constant($REFRSH_RATE=7); // seconds for every page refresh
+constant($EM_DASH="&#8212;"); // html entity 'em dash' or long dash
 
 
-// Set up cookie, and prepare message log for display in HTML
+// Set up cookie, and prepare message log (all messages) for display in HTML
 
 //define("URL", "http://あなたの設置したPHPファイルのURL"); // legacy code
 define("URL", "./simplChat.php");
@@ -32,24 +33,30 @@ $logs = explode("\n", substr(__THIS_FILE__, strpos(__THIS_FILE__, "__"
 if (strcasecmp($_SERVER['REQUEST_METHOD'], 'post') == 0) {
     if (isset($_POST['text']) && !empty($_POST['text'])
         && isset($_POST['name']) && !empty($_POST['name'])) {
+
+	// save username as cookie for typing convenience
         setcookie('name', $_POST['name']);
 
+	// trim excess chat messages
 	if(count($logs) > $MAX_MSGS) {
 		$logs_original = array_slice($logs, count($logs) - $MAX_MSGS);
 	    } else {
 		$logs_original = $logs;
 	    }
 
-	// sheesh, too clever for readability
-	// appears to be setting up each log entry,
-	// or throwing an error to the browser
+	// sheesh, a bit too clever for readability
+	// sets up each log entry,
+	// then tests this script for write permissions.
+	// success: writes entire log array to end of this file
+	// fail: write error message
         if (!file_put_contents(__FILE__, __THIS_SCRIPT__
 		. join("\n", $logs_original)
 		. str_replace(array("\t", "\n", "\r"), "", $_POST['name'])
 		. "\t"
 		. str_replace(array("\t", "\n", "\r"), "", $_POST['text'])
 		. "\t" . TIME . "\n", LOCK_EX)) {
-            echo "failed to write / please set permission 666 this file.<br />";
+            echo "failed to write $EM_DASH "
+	    . "please chown script for web server to write to this file.<br />";
             exit;
         }
     }
@@ -63,7 +70,7 @@ else {
     <head>
 	<meta charset="UTF-8">
 	<meta name="description" content="simple PHP chat script" />
-	<meta http-equiv="refresh" content="<?php echo "$REFRSH_RATE"?>" />
+<!--	<meta http-equiv="refresh" content="<?php echo "$REFRSH_RATE"?>" />-->
 	<title><?php echo "$CHAT_TITLE"?></title>
 	<!-- replace with external CSS if it gets more complex -->
     	<style type="text/css">
@@ -87,6 +94,7 @@ else {
     		message : <input type="text" size="50" name="text"
 				 value="" id="text-message" />
 		<input type="submit" value="Send / Reload" /><br />
+		<p>A blank message will just reload the page.</p>
     	    </form>
     	    <h2>chat log</h2>
     	    <div style="color: #ccc">
@@ -95,12 +103,11 @@ else {
 			if (!empty($m)) {
 			    list($log_name, $log_message, $log_date)
 				    = explode("\t", $m);
-			    // &#8212; is an em dash
 			    echo '<strong>'
 			    . htmlspecialchars($log_name, ENT_QUOTES)
 			    . "</strong> said :  "
 			    . htmlspecialchars($log_message, ENT_QUOTES)
-			    . " <em> &#8212; " . date("Y-m-d H:i:s", $log_date)
+			    . " $EM_DASH <em> " . date("Y-m-d H:i:s", $log_date)
 			    . " </em><br />\n";
 			}
 		    }
